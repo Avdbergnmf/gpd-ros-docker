@@ -10,7 +10,7 @@ echo "Set \$DISPLAY parameter to $DISPLAY"
 CONTAINER_NAME=gpd-ros
 
 docker start $CONTAINER_NAME
-# docker exec -it $CONTAINER_NAME terminator -u
+docker exec -it $CONTAINER_NAME terminator
 # docker attach $CONTAINER_NAME
 
 # disallow x server connection

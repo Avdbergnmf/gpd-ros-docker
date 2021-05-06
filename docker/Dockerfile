@@ -146,7 +146,7 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.tar.gz \
     && make -j$(nproc) \
     && make install
 
-# ======== user config ==========Vector3d view_point_
+# ======== user config ==========
 
 #Add new sudo user
 RUN useradd -m $CONTAINER_USER && \
@@ -175,12 +175,10 @@ RUN wget https://github.com/atenpas/gpd/archive/${GPD_VERSION}.tar.gz \
     && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_FLAGS_DEBUG="-O3 -march=native -mtune=intel -msse4.2 -mavx2 -mfma -flto -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17" .. \ 
     && make -j$(nproc) \
     && make install
-#-DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_FLAGS_DEBUG="-g -O0" -DCMAKE_CXX_FLAGS_DEBUG="-g -O0"
 
 # ======== Installing ROS Core ======== <<<
 # Based on: https://github.com/osrf/docker_images/tree/df19ab7d5993d3b78a908362cdcd1479a8e78b35/ros/melodic/ubuntu/bionic
 
-#### CORE
 # install packages
 RUN apt-get update && apt-get install -q -y --no-install-recommends dirmngr \
     && rm -rf /var/lib/apt/lists/*
@@ -193,25 +191,25 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV ROS_DISTRO melodic
 
-# # install ros packages
+###### One option is to install it in steps like done in the official docker images
+# #### CORE
 # RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-ros-core=1.4.1-0* \
 #     && rm -rf /var/lib/apt/lists/*
-
 # #### BASE
 # RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-ros-base=1.4.1-0* \
 #     && rm -rf /var/lib/apt/lists/*
-
 # #### ROBOT (Specifically need eigen_conversions from this)
 # RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-robot=1.4.1-0* \
 #     && rm -rf /var/lib/apt/lists/*
-# #### PERCEPTION (specifically need pcl_conversions from this)
 # #### DESKTOP (For rviz)
 # RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-desktop=1.4.1-0* \
 #     && rm -rf /var/lib/apt/lists/*
+#### PERCEPTION (specifically need pcl_conversions from this)
 
-# All of the above can probably be replaced by 
+# However, to keep things simple, I'll just install the full desktop install 
 RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-desktop-full \
     && rm -rf /var/lib/apt/lists/*
+# Additionally, we need the object recognition packages
 RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-object-recognition-* \
     && rm -rf /var/lib/apt/lists/*
 

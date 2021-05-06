@@ -1,1 +1,1 @@
-docker build ./docker -f docker/Dockerfile -t pcl-docker:gpd-ros-full
+docker build ./docker -f docker/Dockerfile -t gpd-ros-full

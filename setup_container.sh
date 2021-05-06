@@ -21,5 +21,4 @@ docker run -itd \
            --volume=`pwd`/ws_gpd_tiago:/home/$CONTAINER_USER/docker_dir/ws_gpd_tiago \
            --user=$CONTAINER_USER \
            --privileged \
-           pcl-docker:gpd-ros-full \
-           terminator
+           gpd-ros-full 
