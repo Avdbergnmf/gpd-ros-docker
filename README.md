@@ -54,6 +54,13 @@ run
 
 This should start a terminator window.
 
+### Test GPD installation
+`cd /home/gpd/gpd/build`, then
+```
+./detect_grasps ../cfg/eigen_params.cfg ../tutorials/krylon.pcd
+```
+
+
 ## GPD ROS Wrapper
 This image comes with the full ros desktop installation. The example ros ws is found in `/home/gpd/docker_dir/ws_gpd_tiago`.  
 
