@@ -168,10 +168,12 @@ ENV GPD_VERSION="2.0.0"
 
 # Note: the additional flags are necessary as per: https://github.com/atenpas/gpd/issues/88, additionally changed folder name to just gpd to make it easier to find.
 RUN wget https://github.com/atenpas/gpd/archive/${GPD_VERSION}.tar.gz \
-    && tar -xf ${GPD_VERSION}.tar.gz \
+    && mkdir -p docker_dir/gpd \
+    && tar -xf ${GPD_VERSION}.tar.gz -C docker_dir/gpd \
+    && rm ${GPD_VERSION}.tar.gz \ 
+    && cd docker_dir/gpd \
     && mv gpd-${GPD_VERSION} gpd \
-    && cd gpd \
-    && mkdir build && cd build \
+    && cd gpd && mkdir build && cd build \
     && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_FLAGS_DEBUG="-O3 -march=native -mtune=intel -msse4.2 -mavx2 -mfma -flto -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++17" .. \ 
     && make -j$(nproc) \
     && make install
@@ -227,7 +229,9 @@ RUN unset ENV DEBIAN_FRONTEND=noninteractive
 
 # setup entrypoint
 WORKDIR /home/$CONTAINER_USER
+
 COPY ./ros_entrypoint.sh /
+
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
 CMD ["bash"]

@@ -29,7 +29,7 @@ run
 
 ### Creating & starting a container
 run (NOT using sudo)  
-```
+```du
 ./setup_container.sh
 ```
 
@@ -62,7 +62,7 @@ This should start a terminator window.
 
 
 ## GPD ROS Wrapper
-This image comes with the full ros desktop installation. The example ros ws is found in `/home/gpd/docker_dir/ws_gpd_tiago`.  
+This image comes with the full ros desktop installation. The example ros ws is found in `/home/gpd/docker_dir/ws_gpd_tiago`. If ROS commands aren't found, be sure to source the entrypoint: `source /ros_entrypoint.sh`.  
 
 This workspace contains:   
 - A modified version of [the gpd ROS Wrapper](https://github.com/atenpas/gpd_ros/) adopted for use with the TIAGo robot.  

@@ -1,0 +1,6 @@
+*devel/*
+*build/*
+docker_dir/*
+
+ws_gpd_tiago/build/
+ws_gpd_tiago/devel/
