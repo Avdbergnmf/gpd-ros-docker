@@ -7,10 +7,10 @@ xhost +local:docker
 # to set up the right environment variables in CLion
 echo "Set \$DISPLAY parameter to $DISPLAY" 
 
-CONTAINER_NAME=gpd-ros
+CONTAINER_NAME=deep-grasp-tiago
 
 docker start $CONTAINER_NAME
-docker exec -it $CONTAINER_NAME bash
+docker exec -it $CONTAINER_NAME terminator
 # docker attach $CONTAINER_NAME
 
 # disallow x server connection

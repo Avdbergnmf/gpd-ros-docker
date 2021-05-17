@@ -1,1 +1,0 @@
-docker build ./docker -f docker/Dockerfile -t gpd-ros-full

@@ -1,15 +1,11 @@
-# Based on https://github.com/DLopezMadrid/pcl-docker 
-# Adapted for [Deep Grasping](https://github.com/PickNikRobotics/deep_grasp_demo) in ROS.
+# Based on https://github.com/DLopezMadrid/pcl-docker
+# Adapted for GPD-ROS use (GPD Lib: https://github.com/atenpas/gpd, ROS Wrapper: https://github.com/atenpas/gpd_ros/)
 
 # You will need to have the nvidia GPU drivers and nvidia CUDA drivers in your host to take full advantage of this image
 
-FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04   
-# see https://hub.docker.com/r/nvidia/opengl
+FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04
 
-ENV CONTAINER_USER="deepgrasp"
-
-# we need this here else we get a input dialog in which we need to define our geo area for the TZ
-ENV DEBIAN_FRONTEND=noninteractive
+ENV CONTAINER_USER="gpd"
 
 # ================================================ NVIDIA CUDA Installation ================================================
 # Example from https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/10.2/ubuntu18.04-x86_64/base/Dockerfile
@@ -52,8 +48,7 @@ RUN apt-get update \
         unzip \
         git \
         python3 \
-        python3-pip \
-    && python3 -m pip install --upgrade pip
+        python3-pip
 
 # ======== Installing productivity tools ========
 RUN apt-get install -y \
@@ -128,78 +123,30 @@ RUN wget https://github.com/PointCloudLibrary/pcl/archive/pcl-${PCL_VERSION}.tar
     && make -j$(nproc) \
     && make install
 
+# we need this here else we get a input dialog in which we need to define our geo area for the TZ
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get install -y pcl-tools
 
 RUN unset PCL_VERSION
 
 # ======== Installing OpenCV library ========
-# dependencies
 RUN apt-get install -y \
     libgtk2.0-dev \
     pkg-config \
     libavcodec-dev \
     libavformat-dev \
     libswscale-dev
-# image processing & video processing (after libdc1394-22-dev) & GUI support (libgtk-3-dev) & Optimization (rest)
-RUN apt-get install -y \
-    python-dev \ 
-    python-numpy \ 
-    libtbb2 \ 
-    libtbb-dev \
-    libjpeg-dev libpng-dev \
-    libtiff-dev \
-    libjasper-dev \
-    libdc1394-22-dev \
-    libavcodec-dev \ 
-    libavformat-dev \
-    libswscale-dev \
-    libv4l-dev \
-    libxvidcore-dev \
-    libx264-dev \
-    libgtk-3-dev \
-    libatlas-base-dev \
-    gfortran \
-    pylint
 
 WORKDIR /tmp
 ENV OPENCV_VERSION="4.5.2"
-RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.tar.gz opencv-${OPENCV_VERSION}.tar.gz \
-    && wget https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.tar.gz opencv_contrib-${OPENCV_VERSION}.tar.gz \
-    && tar -xf opencv-${OPENCV_VERSION}.tar.gz \
-    && tar -xf opencv_contrib-${OPENCV_VERSION}.tar.gz \
+RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.tar.gz \
+    && tar -xf ${OPENCV_VERSION}.tar.gz \
     && cd opencv-${OPENCV_VERSION} \
     && mkdir build && cd build \
-    && cmake -D DCMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-3.4.0/modules -DOPENCV_ENABLE_NONFREE=True .. \
+    && cmake -D DCMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local .. \
     && make -j$(nproc) \
-    && make install && ldconfig
-
-# ======== Installing Dex-Net (gpu) ========
-# based on https://github.com/PickNikRobotics/deep_grasp_demo/blob/master/dexnet_install.sh
-
-# install apt deps
-RUN apt-get install -y \
-        libvtk6-dev \ 
-        python-vtk6 \ 
-        python-sip \
-        python-qt4 \
-        libosmesa6-dev \
-        meshlab \
-        libhdf5-dev \
-    && python3 -m pip install tensorflow-gpu==1.13.1 \ 
-    && python3 -m pip install -r dexnet_requirements.txt
-
-# install deps from source (Berkeley AUTOLAB modules) - Installs them in /home/user. Additionally downloads the pre-trained models
-WORKDIR /home/$CONTAINER_USER
-RUN mkdir dexnet_deps && cd dexnet_deps \
-    && git clone https://github.com/BerkeleyAutomation/autolab_core.git \
-    && git clone https://github.com/BerkeleyAutomation/perception.git \
-    && git clone https://github.com/BerkeleyAutomation/gqcnn.git \
-    && git clone https://github.com/BerkeleyAutomation/visualization.git \
-    && cd autolab_core && python3 setup.py develop && cd .. \
-    && cd perception && python3 setup.py develop && cd .. \
-    && cd gqcnn && python3 setup.py develop && cd .. \
-    && cd visualization && python3 setup.py develop && cd .. \
-    && ./dexnet_deps/gqcnn/scripts/downloads/models/download_models.sh
+    && make install
 
 # ======== user config ==========
 
@@ -234,7 +181,7 @@ RUN wget https://github.com/atenpas/gpd/archive/${GPD_VERSION}.tar.gz \
     && make install
 
 # ======== Installing ROS ======== <<<
-# Based on: https://github.com/osrf/docker_images/tree/df19ab7d5993d3b78a908362cdcd1479a8e78b35/ros/
+# Based on: https://github.com/osrf/docker_images/tree/df19ab7d5993d3b78a908362cdcd1479a8e78b35/ros/melodic/ubuntu/bionic
 
 # install packages
 RUN apt-get update && apt-get install -q -y --no-install-recommends dirmngr \
@@ -242,35 +189,29 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends dirmngr \
 # setup keys
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 # setup sources.list
-RUN echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
-
+RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros1-latest.list
 # setup environment
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-
 ENV ROS_DISTRO melodic
 
 # However, to keep things simple, I'll just install the full desktop install 
-RUN apt-get update && apt-get install -y --no-install-recommends ros-$ROS_DISTRO-desktop-full \
+RUN apt-get update && apt-get install -y --no-install-recommends ros-melodic-desktop-full \
     && rm -rf /var/lib/apt/lists/*
 # Additionally, we need some extra packages to make the deep-grasping ws work.
 RUN apt-get update && apt-get install -y --no-install-recommends \ 
-    ros-$ROS_DISTRO-object-recognition-* \ 
-    ros-$ROS_DISTRO-catkin python3-catkin-tools \
-    ros-$ROS_DISTRO-moveit ros-$ROS_DISTRO-moveit-resources \ 
-    ros-$ROS_DISTRO-rosparam-shortcuts \
+    ros-melodic-object-recognition-* \ 
+    ros-melodic-catkin python-catkin-tools \
+    ros-melodic-moveit ros-melodic-moveit-resources \ 
+    ros-melodic-rosparam-shortcuts \
     && rm -rf /var/lib/apt/lists/*
 
 # install bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    python3-rosdep \
-    python3-rosinstall \
-    python3-rosinstall-generator \
-    python3-wstool \
-    python3-catkin-lint \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
     && rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install osrf-pycommon
 
 RUN rosdep init && \
   rosdep update --rosdistro $ROS_DISTRO
